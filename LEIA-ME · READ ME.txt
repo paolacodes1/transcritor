@@ -1,0 +1,77 @@
+TRANSCRITOR
+Transcreve entrevistas e aulas no seu Mac, de graça, usando o Whisper.
+Transcribes interviews and classes on your Mac, for free, using Whisper.
+
+════════════════════════════════════════════════════════════
+PORTUGUÊS
+════════════════════════════════════════════════════════════
+
+INSTALAR (só uma vez, ~10 minutos, precisa de internet)
+
+ 1. Dê dois cliques em "Instalar Transcritor".
+
+ 2. Se o Mac disser que não pode verificar o desenvolvedor:
+      • Clique em "OK" ou "Concluído".
+      • Abra Ajustes do Sistema → Privacidade e Segurança.
+      • Role até o fim e clique em "Abrir Mesmo Assim".
+      • Dê dois cliques em "Instalar Transcritor" de novo e confirme.
+
+ 3. Uma janela preta vai abrir e mostrar o progresso. Deixe aberta até
+    aparecer "✓ Pronto!". O app Transcritor abre sozinho no final.
+
+USAR
+
+ • Abra o app "Transcritor" (na pasta Aplicativos — dica: arraste para o Dock).
+ • Ele abre no navegador. Arraste a gravação (áudio ou vídeo) para a área verde.
+ • Escolha o idioma (ou deixe "Detectar automaticamente").
+ • Opcional: em "Nomes e termos", escreva nomes de pessoas, lugares ou
+   palavras técnicas que aparecem na gravação — ajuda a escrever certo.
+ • Quando terminar, baixe em Word, texto ou legendas, ou copie o texto.
+ • Todas as transcrições ficam salvas em Documentos → Transcritor.
+
+BOM SABER
+
+ • Funciona sem internet depois de instalado. Nada sai do seu Mac.
+ • Velocidade: em Macs com chip M1/M2/M3/M4, uma aula de 1 hora leva
+   uns 3–10 minutos. Em Macs Intel, bem mais devagar.
+ • Pode colocar várias gravações de uma vez — elas entram na fila.
+ • Deixe o Mac ligado na tomada para gravações longas.
+ • O app não separa quem está falando (entrevistador/entrevistado).
+ • Para remover: dê dois cliques em "Desinstalar Transcritor".
+
+════════════════════════════════════════════════════════════
+ENGLISH
+════════════════════════════════════════════════════════════
+
+INSTALL (once, ~10 minutes, needs internet)
+
+ 1. Double-click "Instalar Transcritor".
+
+ 2. If your Mac says it can't verify the developer:
+      • Click "OK" or "Done".
+      • Open System Settings → Privacy & Security.
+      • Scroll to the bottom and click "Open Anyway".
+      • Double-click "Instalar Transcritor" again and confirm.
+
+ 3. A black window opens and shows progress. Keep it open until you see
+    "✓ All set!". The Transcritor app opens by itself at the end.
+
+USE
+
+ • Open the "Transcritor" app (in Applications — tip: drag it to your Dock).
+ • It opens in your browser. Drag in a recording (audio or video).
+ • Pick the language (or leave "Detect automatically").
+ • Optional: under "Names and terms", type names, places or technical
+   words from the recording — it helps spell them correctly.
+ • When it's done, download as Word, text or subtitles, or copy the text.
+ • All transcripts are saved in Documents → Transcritor.
+
+GOOD TO KNOW
+
+ • Works offline after setup. Nothing leaves your Mac.
+ • Speed: on M1/M2/M3/M4 Macs, a 1-hour class takes about 3–10 minutes.
+   On Intel Macs it's much slower.
+ • You can drop several recordings at once — they queue up.
+ • Keep your Mac plugged in for long recordings.
+ • It doesn't label who is speaking.
+ • To remove it: double-click "Desinstalar Transcritor".
