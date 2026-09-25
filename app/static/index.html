@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transcritor</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --card: #ffffff; --ink: #1f1d1a; --muted: #6f6a62; --line: #e4dfd5;
+    --accent: #2f6b5a; --accent-soft: #e3efe9; --warn: #a2452f; --warn-soft: #f7e6e1;
+    --drop: #fbfaf7; --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614; --card: #211f1c; --ink: #ece8e1; --muted: #a39d93; --line: #35322d;
+      --accent: #7cc2aa; --accent-soft: #23352e; --warn: #e79a86; --warn-soft: #3a2621;
+      --drop: #1c1b18; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.01em; display: flex; gap: 10px; align-items: center; }
+  h1 .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--muted); padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button.on { background: var(--card); color: var(--ink); font-weight: 600; }
+  .settings { display: grid; grid-template-columns: 240px 1fr; gap: 12px; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 4px 2px; font-weight: 500; }
+  select, input[type=text] { width: 100%; font: inherit; color: var(--ink); background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  #drop { border: 2px dashed var(--line); background: var(--drop); border-radius: 14px; padding: 44px 20px;
+    text-align: center; cursor: pointer; transition: .15s; }
+  #drop:hover, #drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  #drop .big { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  #drop .small { color: var(--muted); font-size: 13px; }
+  #drop svg { color: var(--accent); margin-bottom: 8px; }
+  .jobs { margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .job { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .job .top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .job .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .job .state { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .job.error .state { color: var(--warn); }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .6s; }
+  .bar.indet i { width: 30%; animation: slide 1.4s infinite ease-in-out; }
+  @keyframes slide { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .btn { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #10201a; } }
+  .btn.ghost { border-color: transparent; color: var(--muted); }
+  .preview { margin-top: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; font-size: 14px;
+    background: var(--drop); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: none; }
+  .preview.open { display: block; }
+  .err { margin-top: 8px; font-size: 13px; color: var(--warn); background: var(--warn-soft); padding: 8px 10px; border-radius: 8px; }
+  footer { margin-top: 36px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .empty { text-align: center; color: var(--muted); font-size: 13px; margin-top: 18px; }
+  #offline { display: none; background: var(--warn-soft); color: var(--warn); padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }
+  @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="dot"></span>Transcritor</h1>
+    <div class="seg" id="uilang">
+      <button data-l="pt">PT</button><button data-l="en">EN</button>
+    </div>
+  </header>
+
+  <div id="offline" data-t="offline"></div>
+
+  <div class="settings">
+    <div>
+      <label data-t="langLabel"></label>
+      <select id="lang">
+        <option value="auto" data-t="auto"></option>
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+    <div>
+      <label data-t="promptLabel"></label>
+      <input type="text" id="prompt" data-tp="promptPh">
+    </div>
+  </div>
+
+  <div id="drop" tabindex="0">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+    <div class="big" data-t="dropBig"></div>
+    <div class="small" data-t="dropSmall"></div>
+    <input type="file" id="file" accept="audio/*,video/*,.m4a,.mp3,.wav,.mp4,.mov,.aac,.ogg,.opus,.flac,.webm,.amr,.3gp" multiple hidden>
+  </div>
+
+  <div class="jobs" id="jobs"></div>
+  <div class="empty" id="empty" data-t="empty"></div>
+
+  <footer>
+    <span data-t="private"></span>
+    <span>
+      <button class="btn" id="openFolder" data-t="openFolder"></button>
+      <button class="btn ghost" id="quit" data-t="quit"></button>
+    </span>
+  </footer>
+</div>
+
+<script>
+const T = {
+  pt: {
+    langLabel: "Idioma da gravação", auto: "Detectar automaticamente",
+    promptLabel: "Nomes e termos (opcional)",
+    promptPh: "Ex.: Dra. Ana Kowalski, Unijuí, fotossíntese — ajuda a escrever certo",
+    dropBig: "Arraste gravações para cá", dropSmall: "ou clique para escolher · áudio ou vídeo (m4a, mp3, wav, mp4, mov…)",
+    empty: "Nenhuma transcrição ainda.",
+    private: "Tudo roda no seu Mac — nada é enviado para a internet.",
+    openFolder: "Abrir pasta de transcrições", quit: "Fechar Transcritor",
+    queued: "Na fila", uploading: "Enviando…", preparing: "Preparando…", running: "Transcrevendo",
+    left: "faltam ~", done: "Pronto", error: "Erro", cancelled: "Cancelado",
+    word: "Word", text: "Texto", timed: "Texto com tempos", srt: "Legendas (.srt)",
+    copy: "Copiar texto", copied: "Copiado!", show: "Ver texto", hide: "Esconder", finder: "Mostrar no Finder",
+    remove: "Remover da lista", cancel: "Cancelar",
+    noAudio: "Esse arquivo não tem áudio ou não pôde ser lido.",
+    noModel: "Não foi possível baixar o modelo de transcrição. Verifique a internet e tente de novo (só é preciso na primeira vez).",
+    offline: "O Transcritor foi fechado. Abra o app Transcritor de novo para continuar.",
+    quitConfirm: "Fechar o Transcritor? Transcrições em andamento serão interrompidas.",
+    firstRun: "A primeira transcrição demora um pouco mais para começar.",
+    min: "min", sec: "s",
+  },
+  en: {
+    langLabel: "Recording language", auto: "Detect automatically",
+    promptLabel: "Names and terms (optional)",
+    promptPh: "E.g. Prof. Hernandez, mitochondria, Keynesian — helps spell them right",
+    dropBig: "Drag recordings here", dropSmall: "or click to choose · audio or video (m4a, mp3, wav, mp4, mov…)",
+    empty: "No transcripts yet.",
+    private: "Everything runs on your Mac — nothing is sent to the internet.",
+    openFolder: "Open transcripts folder", quit: "Quit Transcritor",
+    queued: "Queued", uploading: "Loading…", preparing: "Getting ready…", running: "Transcribing",
+    left: "~", done: "Done", error: "Error", cancelled: "Cancelled",
+    word: "Word", text: "Text", timed: "Text with times", srt: "Subtitles (.srt)",
+    copy: "Copy text", copied: "Copied!", show: "Show text", hide: "Hide", finder: "Show in Finder",
+    remove: "Remove from list", cancel: "Cancel",
+    noAudio: "This file has no audio or couldn't be read.",
+    noModel: "Couldn't download the transcription model. Check your internet and try again (only needed the first time).",
+    offline: "Transcritor was closed. Open the Transcritor app again to continue.",
+    quitConfirm: "Quit Transcritor? Transcriptions in progress will stop.",
+    firstRun: "The first transcription takes a little longer to start.",
+    min: "min", sec: "s",
+  }
+};
+const store = {
+  get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+let ui = store.get("ui", (navigator.language || "pt").toLowerCase().startsWith("pt") ? "pt" : "en");
+const t = k => T[ui][k] ?? k;
+const $ = s => document.querySelector(s);
+
+function applyUI() {
+  document.documentElement.lang = ui;
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll("[data-tp]").forEach(el => el.placeholder = t(el.dataset.tp));
+  document.querySelectorAll("#uilang button").forEach(b => b.classList.toggle("on", b.dataset.l === ui));
+  render(true);
+}
+document.querySelectorAll("#uilang button").forEach(b => b.onclick = () => { ui = b.dataset.l; store.set("ui", ui); applyUI(); });
+
+const langSel = $("#lang"), promptIn = $("#prompt");
+langSel.value = store.get("lang", "auto");
+promptIn.value = store.get("prompt", "");
+langSel.onchange = () => store.set("lang", langSel.value);
+promptIn.oninput = () => store.set("prompt", promptIn.value);
+
+// ---------- uploads ----------
+const drop = $("#drop"), fileIn = $("#file");
+drop.onclick = () => fileIn.click();
+drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") fileIn.click(); };
+fileIn.onchange = () => { addFiles(fileIn.files); fileIn.value = ""; };
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => e.preventDefault());
+
+const pending = []; // local placeholders while uploading
+async function addFiles(list) {
+  for (const f of list) {
+    const ph = { id: "up-" + Math.random().toString(36).slice(2), name: f.name, status: "uploading", progress: 0 };
+    pending.push(ph); render();
+    const fd = new FormData();
+    fd.append("file", f); fd.append("language", langSel.value); fd.append("prompt", promptIn.value);
+    try { await fetch("/upload", { method: "POST", body: fd }); }
+    catch { ph.status = "error"; ph.error = "upload"; }
+    pending.splice(pending.indexOf(ph), 1);
+    await refresh();
+  }
+}
+
+// ---------- job list ----------
+let jobs = [], openPreviews = new Set(), texts = {}, anyDoneEver = false;
+async function refresh() {
+  try {
+    const r = await fetch("/jobs"); jobs = await r.json();
+    $("#offline").style.display = "none";
+  } catch { $("#offline").style.display = "block"; }
+  render();
+}
+function fmtDur(s) {
+  s = Math.max(0, Math.round(s));
+  if (s < 60) return s + " " + t("sec");
+  const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+  return h ? `${h}h ${String(m).padStart(2, "0")}` : m + " " + t("min");
+}
+function stateText(j) {
+  if (j.status === "running") {
+    if (j.progress < 0.005) return t("preparing");
+    let s = `${t("running")} · ${Math.floor(j.progress * 100)}%`;
+    const el = Date.now() / 1000 - j.started;
+    if (j.progress > 0.03 && el > 10) s += ` · ${t("left")}${fmtDur(el / j.progress * (1 - j.progress))}`;
+    return s;
+  }
+  if (j.status === "done") return `${t("done")} · ${fmtDur(j.duration)}`;
+  return t(j.status);
+}
+let lastSig = "";
+function render(force) {
+  const all = [...pending.slice().reverse(), ...jobs];
+  $("#empty").style.display = all.length ? "none" : "block";
+  const sig = JSON.stringify(all.map(j => [j.id, j.status, Math.floor((j.progress||0)*200)])) + [...openPreviews].join();
+  if (!force && sig === lastSig) return; lastSig = sig;
+  const box = $("#jobs"); box.innerHTML = "";
+  for (const j of all) {
+    const el = document.createElement("div");
+    el.className = "job " + j.status;
+    const name = document.createElement("div"); name.className = "name"; name.textContent = j.name; name.title = j.name;
+    const state = document.createElement("div"); state.className = "state"; state.textContent = stateText(j);
+    const top = document.createElement("div"); top.className = "top"; top.append(name, state); el.append(top);
+
+    if (["queued", "running", "uploading"].includes(j.status)) {
+      const bar = document.createElement("div"); bar.className = "bar";
+      const indet = j.status !== "running" || j.progress < 0.005;
+      if (indet && j.status !== "queued") bar.classList.add("indet");
+      const i = document.createElement("i"); if (!indet) i.style.width = (j.progress * 100) + "%";
+      bar.append(i); el.append(bar);
+      if (j.status === "running" && j.progress < 0.005 && !anyDoneEver) {
+        const n = document.createElement("div"); n.className = "state"; n.style.marginTop = "6px"; n.textContent = t("firstRun"); el.append(n);
+      }
+      if (j.status === "queued") el.append(actions([[t("cancel"), () => post(`/jobs/${j.id}/cancel`), "ghost"]]));
+    }
+    if (j.status === "done") {
+      anyDoneEver = true;
+      const dl = k => () => { location.href = `/jobs/${j.id}/file/${k}`; };
+      const isOpen = openPreviews.has(j.id);
+      el.append(actions([
+        [t("word"), dl("docx"), "primary"], [t("text"), dl("txt")], [t("timed"), dl("timed")], [t("srt"), dl("srt")],
+        [t("copy"), async (e) => { await navigator.clipboard.writeText(await getText(j.id)); e.target.textContent = t("copied"); setTimeout(() => e.target.textContent = t("copy"), 1500); }],
+        [isOpen ? t("hide") : t("show"), () => { isOpen ? openPreviews.delete(j.id) : openPreviews.add(j.id); render(true); }],
+        [t("finder"), () => post("/reveal", { id: j.id })],
+        [t("remove"), () => post(`/jobs/${j.id}/remove`).then(refresh), "ghost"],
+      ]));
+      const pv = document.createElement("div"); pv.className = "preview" + (isOpen ? " open" : "");
+      if (isOpen) getText(j.id).then(tx => pv.textContent = tx);
+      el.append(pv);
+    }
+    if (j.status === "error" || j.status === "cancelled") {
+      if (j.error) { const e = document.createElement("div"); e.className = "err"; e.textContent = j.error === "NO_AUDIO" ? t("noAudio") : j.error === "NO_MODEL" ? t("noModel") : j.error; el.append(e); }
+      if (!String(j.id).startsWith("up-")) el.append(actions([[t("remove"), () => post(`/jobs/${j.id}/remove`).then(refresh), "ghost"]]));
+    }
+    box.append(el);
+  }
+}
+function actions(list) {
+  const d = document.createElement("div"); d.className = "actions";
+  for (const [label, fn, cls] of list) {
+    const b = document.createElement("button"); b.className = "btn " + (cls || ""); b.textContent = label; b.onclick = fn; d.append(b);
+  }
+  return d;
+}
+async function getText(id) {
+  if (!texts[id]) texts[id] = await (await fetch(`/jobs/${id}/text`)).text();
+  return texts[id];
+}
+function post(url, body) {
+  return fetch(url, { method: "POST", headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+}
+
+$("#openFolder").onclick = () => post("/reveal", {});
+$("#quit").onclick = async () => {
+  if (jobs.some(j => j.status === "running" || j.status === "queued") && !confirm(t("quitConfirm"))) return;
+  await post("/quit").catch(() => {});
+  $("#offline").style.display = "block";
+};
+
+// keep-alive + polling
+const ping = () => fetch("/ping").catch(() => {});
+ping(); setInterval(ping, 20000);
+async function loop() {
+  await refresh();
+  const active = jobs.some(j => j.status === "running" || j.status === "queued") || pending.length;
+  setTimeout(loop, active ? 1000 : 3000);
+}
+applyUI(); loop();
+</script>
+</body>
+</html>
